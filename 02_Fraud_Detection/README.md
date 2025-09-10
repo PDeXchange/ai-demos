@@ -2,36 +2,29 @@
 
 This guide explains how to run an Fraud detection classification model using ONNX Runtime served via the Triton Inference Server. The Fraud detection dataset is a classic dataset in machine learning, and this example demonstrates how to deploy a trained model for inference using modern serving infrastructure.
 
-## Prerequisites
-
-### Install the prerequirements:
-
-```shell
-pip install -r requirements.txt
+## Train/Generate the model:
+Build fraud detection container image
+```
+podman build . -t localhost/fraud_detection_onnx
 ```
 
-ppc64le environment:
+Run the container to train and generate the model using ONNX runtime
 ```
-pip install --prefer-binary --extra-index-url=https://wheels.developerfirst.ibm.com/ppc64le/linux -r requirements.txt
-```
-
-### Train/Generate the model:
-
-```
-python train.py
+podman run --rm  --name fraud-analytics -v model_repository:/fraud_detection/model_repository localhost/fraud_detection_onnx
 ```
 
-> Note: This will generate a model file by name model.onnx and saves it in the current directory.
+> Note: This will persist the generated model file onto a podman volume **model_repository**.  Model file will be saved in the path `/var/lib/containers/storage/volumes/model_repository/_data/model_repository/fraud/1/model.onnx`
 
-## Running the example
+## Running the triton server with fraud detection example
 
-To run this example, you can use the following command:
+Use the model file generated in previus step to be served from triton server
 
 ```
+cp /var/lib/containers/storage/volumes/model_repository/_data/model_repository/fraud/1/model.onnx .
 make run
 ```
 
-After successful completion of above command, triton inference server will run inside container on HTTP port 8000
+After successful execution of above commands, triton inference server will run inside container on HTTP port 8000
 
 ### Testing fraud detection example against Triton inference server
 Check the models loaded on the inference server

@@ -7,7 +7,7 @@ prepare:
 	cp model.onnx ${WORKING_DIR}/model_repository/fraud/1
 	cp config.pbtxt ${WORKING_DIR}/model_repository/fraud
 
-run: train prepare
+run:
 	podman run --rm -itd -p8000:8000 -p8001:8001 -p8002:8002 -v ${WORKING_DIR}/model_repository:/models:Z quay.io/powercloud/tritonserver:latest tritonserver --model-repository=/models
 
 clean:
