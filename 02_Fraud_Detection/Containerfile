@@ -15,8 +15,6 @@ RUN microdnf install -y dnf openssl-devel && dnf install -y \
     && uv pip install wheel build setuptools 'cmake<4' cython
 
 WORKDIR /fraud_detection
-COPY train.py /fraud_detection/
-COPY Makefile config.pbtxt sample-fraud.json sample-non-fraud.json /fraud_detection/
 COPY requirements.txt /fraud_detection/
 
 RUN  export PATH="$HOME/.cargo/bin:$PATH" && \
@@ -32,6 +30,8 @@ COPY --from=builder /opt/venv /opt/venv
 COPY --from=builder /usr/local/lib /usr/local/lib
 COPY --from=builder /usr/lib64 /usr/lib64
 COPY --from=builder /fraud_detection /fraud_detection
+COPY train.py /fraud_detection/
+COPY Makefile config.pbtxt sample-fraud.json sample-non-fraud.json /fraud_detection/
 
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH=${VIRTUAL_ENV}/bin:$PATH

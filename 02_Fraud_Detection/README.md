@@ -10,7 +10,7 @@ podman build . -t localhost/fraud_detection_onnx
 
 Run the container to train and generate the model using ONNX runtime
 ```
-podman run --rm  --name fraud-analytics -v model_repository:/fraud_detection/model_repository localhost/fraud_detection_onnx
+podman run --rm  --name fraud-detection -v model_repository:/fraud_detection/model_repository localhost/fraud_detection_onnx
 ```
 
 > Note: This will persist the generated model file onto a podman volume **model_repository**.  Model file will be saved in the path `/var/lib/containers/storage/volumes/model_repository/_data/model_repository/fraud/1/model.onnx`
