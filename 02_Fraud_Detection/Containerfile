@@ -1,4 +1,4 @@
-ARG BASE_UBI_IMAGE_TAG=9.5-1742914212
+ARG BASE_UBI_IMAGE_TAG=9.6
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:${BASE_UBI_IMAGE_TAG} AS builder
 
@@ -6,8 +6,8 @@ ARG PYTHON_VERSION=3.12
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH=${VIRTUAL_ENV}/bin:$PATH
 
-RUN microdnf install -y dnf openssl-devel && dnf install -y \
-    gcc-toolset-13 gcc-toolset-13-gcc-c++ gcc-gfortran \
+# openblas-devel package is needed for numpy package
+RUN microdnf install -y dnf && dnf install -y \
     openblas-devel python${PYTHON_VERSION}-devel python${PYTHON_VERSION}-pip \
     && dnf clean all \
     && python${PYTHON_VERSION} -m venv ${VIRTUAL_ENV} \
@@ -24,18 +24,16 @@ RUN  export PATH="$HOME/.cargo/bin:$PATH" && \
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:${BASE_UBI_IMAGE_TAG}
 RUN microdnf install -y dnf && dnf install -y \
-  python3.12 python3.12-pip make && dnf clean all
+  python3.12 make && dnf clean all
 
 COPY --from=builder /opt/venv /opt/venv
 COPY --from=builder /usr/local/lib /usr/local/lib
 COPY --from=builder /usr/lib64 /usr/lib64
 COPY --from=builder /fraud_detection /fraud_detection
-COPY train.py /fraud_detection/
-COPY Makefile config.pbtxt sample-fraud.json sample-non-fraud.json /fraud_detection/
 
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH=${VIRTUAL_ENV}/bin:$PATH
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64:/usr/local/lib:/opt/venv/lib/python3.12/site-packages/libprotobuf/lib64/
 
 WORKDIR /fraud_detection
-
-CMD ["/bin/bash", "-c", "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64:/usr/local/lib:/opt/venv/lib/python3.12/site-packages/libprotobuf/lib64/ && make train && make prepare"]
+CMD ["/bin/bash", "-c", "make train && make prepare"]

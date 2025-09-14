@@ -3,24 +3,23 @@
 This guide explains how to run an Fraud detection classification model using ONNX Runtime served via the Triton Inference Server. The Fraud detection dataset is a classic dataset in machine learning, and this example demonstrates how to deploy a trained model for inference using modern serving infrastructure.
 
 ## Train/Generate the model:
-Build fraud detection container image
+Build ONNX build_env container image
 ```
-podman build . -t localhost/fraud_detection_onnx
+podman build . -t localhost/build_env
 ```
 
 Run the container to train and generate the model using ONNX runtime
 ```
-podman run --rm  --name fraud-detection -v model_repository:/fraud_detection/model_repository localhost/fraud_detection_onnx
+podman run --rm --name fraud-detection -v $(pwd):/fraud_detection:Z -v $(pwd)/model_repository:/fraud_detection/model_repository localhost/build_env
 ```
 
-> Note: This will persist the generated model file onto a podman volume **model_repository**.  Model file will be saved in the path `/var/lib/containers/storage/volumes/model_repository/_data/model_repository/fraud/1/model.onnx`
+> Note: This will persist the generated model file in the path `<current_dir>/model_repository/fraud/1/model.onnx`
 
 ## Running the triton server with fraud detection example
 
-Use the model file generated in previus step to be served from triton server
+Use the model file generated in previus step to be served from triton server by mounting **model_repository** directory
 
 ```
-cp /var/lib/containers/storage/volumes/model_repository/_data/model_repository/fraud/1/model.onnx .
 make run
 ```
 
